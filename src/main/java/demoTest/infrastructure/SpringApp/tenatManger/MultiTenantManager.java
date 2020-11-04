@@ -53,9 +53,7 @@ public class MultiTenantManager {
     }
 
     public void setCurrentTenant(String tenantId) throws SQLException, TenantNotFoundException {
-
         addTenant(tenantId);
-
         currentTenant.set(tenantId);
         log.debug("[d] Tenant '{}' set as current.", tenantId);
     }
@@ -91,8 +89,6 @@ public class MultiTenantManager {
     }
 
     private DriverManagerDataSource masterDataSource() {
-        System.out.println(com.mysql.jdbc.Driver.class.getName());
-
         DriverManagerDataSource defaultDataSource = new DriverManagerDataSource();
         defaultDataSource.setDriverClassName(com.mysql.jdbc.Driver.class.getName());
         defaultDataSource.setUrl("jdbc:mysql://localhost:6603/ds_1_master");
