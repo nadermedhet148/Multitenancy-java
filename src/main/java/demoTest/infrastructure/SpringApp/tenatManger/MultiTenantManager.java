@@ -23,18 +23,14 @@ public class MultiTenantManager {
 
     private final ThreadLocal<String> currentTenant = new ThreadLocal<>();
     private final Map<Object, Object> tenantDataSources = new ConcurrentHashMap<>();
-    private final DataSourceProperties properties;
+    private  DataConfigurationFactory dataConfigurationFactory = new DataConfigurationFactory();
 
-    private Function<String, DataSourceProperties> tenantResolver;
 
     private AbstractRoutingDataSource multiTenantDataSource;
 
-    public MultiTenantManager(DataSourceProperties properties) {
-        this.properties = properties;
-    }
 
     @Bean
-    public DataSource dataSource() {
+    public DataSource dataSource() throws TentNotExisted {
 
         multiTenantDataSource = new AbstractRoutingDataSource() {
             @Override
@@ -43,30 +39,18 @@ public class MultiTenantManager {
             }
         };
         multiTenantDataSource.setTargetDataSources(tenantDataSources);
-        multiTenantDataSource.setDefaultTargetDataSource(masterDataSource());
+        multiTenantDataSource.setDefaultTargetDataSource(dataConfigurationFactory.getDataConfiguration("master"));
         multiTenantDataSource.afterPropertiesSet();
         return multiTenantDataSource;
     }
 
-    public void setTenantResolver(Function<String, DataSourceProperties> tenantResolver) {
-        this.tenantResolver = tenantResolver;
-    }
 
-    public void setCurrentTenant(String tenantId) throws SQLException, TenantNotFoundException {
-        addTenant(tenantId);
-        currentTenant.set(tenantId);
-        log.debug("[d] Tenant '{}' set as current.", tenantId);
-    }
 
-    public void addTenant(String tenantId) throws SQLException {
 
-        DataSource dataSource = masterDataSource(); ;
+    public void setTenant(String tenantId) throws SQLException, TentNotExisted {
 
-        if(tenantId == "slave"){
-            dataSource = slaveDataSource();
-        }
+        DataSource dataSource = dataConfigurationFactory.getDataConfiguration(tenantId);
 
-        // Check that new connection is 'live'. If not - throw exception
         try(Connection c = dataSource.getConnection()) {
             tenantDataSources.put(tenantId, dataSource);
             multiTenantDataSource.afterPropertiesSet();
@@ -74,35 +58,6 @@ public class MultiTenantManager {
         }
     }
 
-    public DataSource removeTenant(String tenantId) {
-        Object removedDataSource = tenantDataSources.remove(tenantId);
-        multiTenantDataSource.afterPropertiesSet();
-        return (DataSource) removedDataSource;
-    }
 
-    public boolean tenantIsAbsent(String tenantId) {
-        return !tenantDataSources.containsKey(tenantId);
-    }
 
-    public Collection<Object> getTenantList() {
-        return tenantDataSources.keySet();
-    }
-
-    private DriverManagerDataSource masterDataSource() {
-        DriverManagerDataSource defaultDataSource = new DriverManagerDataSource();
-        defaultDataSource.setDriverClassName(com.mysql.jdbc.Driver.class.getName());
-        defaultDataSource.setUrl("jdbc:mysql://localhost:6603/ds_1_master");
-        defaultDataSource.setUsername("root");
-        defaultDataSource.setPassword("Admin1234");
-        return defaultDataSource;
-    }
-
-    private DriverManagerDataSource slaveDataSource() {
-        DriverManagerDataSource defaultDataSource = new DriverManagerDataSource();
-        defaultDataSource.setDriverClassName(com.mysql.jdbc.Driver.class.getName());
-        defaultDataSource.setUrl("jdbc:mysql://localhost:6603/ds_0_master");
-        defaultDataSource.setUsername("root");
-        defaultDataSource.setPassword("Admin1234");
-        return defaultDataSource;
-    }
 }

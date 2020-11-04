@@ -2,6 +2,7 @@ package demoTest.infrastructure.SpringApp.RestServices.Handlers;
 
 import demoTest.DomianServices.exceptions.ExceptionBase;
 import demoTest.DomianServices.exceptions.student.StudentNotExistsException;
+import demoTest.infrastructure.SpringApp.tenatManger.TentNotExisted;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.http.HttpHeaders;
@@ -17,7 +18,7 @@ import java.util.stream.Stream;
 @ControllerAdvice
 public class ErrorHandler extends ResponseEntityExceptionHandler {
 
-    @ExceptionHandler(value = {ExceptionBase.class})
+    @ExceptionHandler(value = {ExceptionBase.class , TentNotExisted.class})
     protected ResponseEntity<Object> handleError(ExceptionBase ex, WebRequest request) {
         ResponseBody bodyOfResponse;
         try {
