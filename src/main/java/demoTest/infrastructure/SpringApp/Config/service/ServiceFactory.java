@@ -1,4 +1,4 @@
-package demoTest.infrastructure.SpringApp.configuration.service;
+package demoTest.infrastructure.SpringApp.Config.service;
 
 
 import demoTest.DomianServices.services.IStudentService;
