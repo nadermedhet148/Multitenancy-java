@@ -5,3 +5,7 @@ is an architecture in which a single instance of a software application serves m
 In a multi-tenant architecture, multiple instances of an application operate in a shared environment. This architecture is able to work because each tenant is integrated physically, but logically separated; meaning that a single instance of the software will run on one server and then serve multiple tenants. In this way, a software application in a multi-tenant architecture can share a dedicated instance of configurations, data, user management and
 
 This repo build on onion architecture
+
+### Resourses 
+- https://whatis.techtarget.com/definition/multi-tenancy
+- https://www.youtube.com/watch?v=60ccSmOxpMw
